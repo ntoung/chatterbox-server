@@ -44,9 +44,49 @@ var requestHandler = function(request, response) {
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
+  console.log('/////////////////////');
+  console.log('request: ');
+  // console.log('request.method ' + request.method);
+  // console.log('request ' + request.data);
+  // console.log(request);
+  console.log('/////////////////////');
+  // console.log('responsePOST: ');
+  // console.log(request._postData);
+
+  // console.log('/////////////////////');
+
+  // request.trigger('data', function(data) {
+  //   console.log(data);
+  // });
+
+  // response.on('data', function(data) {
+  //   console.log('RESPONSE DATA');
+  //   console.log(data);
+  // });
+
+  var results = [];
+
+  console.log('/////////////////////');
+  console.log('REQUEST ON DATA');
+  console.log(request._postData);
+
+  request.on('data', function(data) {
+    console.log(data.toString());
+    results.push(JSON.parse(data.toString())); 
+  });
+
+  // .done(function() {
+
+  // });
+
+  // response.read();
 
   // The outgoing status.
   var statusCode = 200;
+
+  if (request.method === 'POST') {
+    statusCode = 201;
+  } 
 
   // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
@@ -57,15 +97,33 @@ var requestHandler = function(request, response) {
   // other than plain text, like JSON or HTML.
   headers['Content-Type'] = 'text/plain';
 
+  console.log(results);
+
+  response.body = JSON.stringify({
+    results: results,
+  });
+
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
   response.writeHead(statusCode, headers);
 
+  
+  // res.setEncoding('utf8');
+  //   let rawData = '';
+  //   res.on('data', (chunk) => rawData += chunk);
+  //   res.on('end', () => {
+  //     try {
+  //       let parsedData = JSON.parse(rawData);
+  //       console.log(parsedData);
+  //     } catch (e) {
+  //       console.log(e.message);
+  //     }
+  //   });
+  // }).on('error', (e) => {
+  //   console.log(`Got error: ${e.message}`);
+  // });
 
-
-  response.results = {
-    
-  }; 
+  // var result = JSON.stringify(response.body);
 
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
@@ -74,7 +132,14 @@ var requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end('Hello, World!');
+
+
+
+
+
+  response.end(response.body);
+
+
 
 };
 
