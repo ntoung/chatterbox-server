@@ -28,6 +28,7 @@ var defaultCorsHeaders = {
   'access-control-max-age': 10 // Seconds.
 };
 
+var results = [];
 
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
@@ -45,26 +46,7 @@ var requestHandler = function(request, response) {
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
-  // console.log('/////////////////////');
-  // console.log('request: ');
-  // console.log('request.method ' + request.method);
-  // console.log('request ' + request.data);
-  // console.log(request);
-  // console.log('/////////////////////');
-  // console.log('responsePOST: ');
-  // console.log(request._postData);
-
-  // console.log('/////////////////////');
-
-  // request.trigger('data', function(data) {
-  //   console.log(data);
-  // });
-
-  // response.on('data', function(data) {
-  //   console.log('RESPONSE DATA');
-  //   console.log(data);
-  // });
-
+  
   // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
 
@@ -74,71 +56,62 @@ var requestHandler = function(request, response) {
   // other than plain text, like JSON or HTML.
   headers['Content-Type'] = 'text/plain';
 
-  var results = [];
-
-  // console.log('/////////////////////');
-  // console.log('REQUEST ON DATA');
-  // console.log(request._postData);
-
-
-
-  // The outgoing status.
-  var statusCode = 200;
- 
 
   // GET handler
   if (request.method === 'GET') {
-    response.end('');
-  }
+    // The outgoing status.
+    var statusCode = 200;
 
-  var buffer = [];
+    // .writeHead() writes to the request line and headers of the response,
+    // which includes the status and all headers.
+    response.writeHead(statusCode, headers);
+    
+    response.end(JSON.stringify({
+      'results': results
+    }));
+  } else {
 
-  if (request.method === 'POST') {
-    statusCode = 201;
+  // if (request.method === 'POST') {
+    var statusCode = 201;
 
+    // .writeHead() writes to the request line and headers of the response,
+    // which includes the status and all headers.
+    response.writeHead(statusCode, headers);
+  
     request.on('data', function(data) {
     // console.log(data.toString());
     // results.push(JSON.parse(data.toString())); 
 
-      buffer.push(data);
+      // handle data
 
-    }).on('end', function() {
+      var message = {};
+      message['username'] = JSON.parse(data)['username'];
+      message['message'] = JSON.parse(data)['message'];
 
-      var bufferToString = Buffer.concat(buffer).toString();
-      var parsed = JSON.parse(bufferToString);
-      results.push(parsed);
+      results.push(message);
 
-      response.body = JSON.stringify({
-        results: results,
+      request.on('end', function() {
+
+        // var bufferToString = Buffer.concat(buffer).toString();
+        // var parsed = JSON.parse(bufferToString);
+        // results.push(parsed);
+
+        response.body = JSON.stringify({
+          'results': results,
+        });
+
+        console.log('response.body' + response.body);
+        response.end(response.body);
+
       });
-
-      console.log('response.body' + response.body);
-      response.end(response.body);
-
     });
 
 
   }   
 
-  // .writeHead() writes to the request line and headers of the response,
-  // which includes the status and all headers.
-  response.writeHead(statusCode, headers);
+  
 
   
-  // res.setEncoding('utf8');
-  //   let rawData = '';
-  //   res.on('data', (chunk) => rawData += chunk);
-  //   res.on('end', () => {
-  //     try {
-  //       let parsedData = JSON.parse(rawData);
-  //       console.log(parsedData);
-  //     } catch (e) {
-  //       console.log(e.message);
-  //     }
-  //   });
-  // }).on('error', (e) => {
-  //   console.log(`Got error: ${e.message}`);
-  // });
 
   // var result = JSON.stringify(response.body);
 
@@ -160,3 +133,4 @@ var requestHandler = function(request, response) {
 
 
 module.exports = requestHandler;
+module.exports['requestHandler'] = requestHandler;
