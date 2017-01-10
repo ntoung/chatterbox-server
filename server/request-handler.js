@@ -28,6 +28,7 @@ var defaultCorsHeaders = {
   'access-control-max-age': 10 // Seconds.
 };
 
+
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
   //
@@ -44,12 +45,12 @@ var requestHandler = function(request, response) {
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
-  console.log('/////////////////////');
-  console.log('request: ');
+  // console.log('/////////////////////');
+  // console.log('request: ');
   // console.log('request.method ' + request.method);
   // console.log('request ' + request.data);
   // console.log(request);
-  console.log('/////////////////////');
+  // console.log('/////////////////////');
   // console.log('responsePOST: ');
   // console.log(request._postData);
 
@@ -64,30 +65,6 @@ var requestHandler = function(request, response) {
   //   console.log(data);
   // });
 
-  var results = [];
-
-  console.log('/////////////////////');
-  console.log('REQUEST ON DATA');
-  console.log(request._postData);
-
-  request.on('data', function(data) {
-    console.log(data.toString());
-    results.push(JSON.parse(data.toString())); 
-  });
-
-  // .done(function() {
-
-  // });
-
-  // response.read();
-
-  // The outgoing status.
-  var statusCode = 200;
-
-  if (request.method === 'POST') {
-    statusCode = 201;
-  } 
-
   // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
 
@@ -97,11 +74,51 @@ var requestHandler = function(request, response) {
   // other than plain text, like JSON or HTML.
   headers['Content-Type'] = 'text/plain';
 
-  console.log(results);
+  var results = [];
 
-  response.body = JSON.stringify({
-    results: results,
-  });
+  // console.log('/////////////////////');
+  // console.log('REQUEST ON DATA');
+  // console.log(request._postData);
+
+
+
+  // The outgoing status.
+  var statusCode = 200;
+ 
+
+  // GET handler
+  if (request.method === 'GET') {
+    response.end('');
+  }
+
+  var buffer = [];
+
+  if (request.method === 'POST') {
+    statusCode = 201;
+
+    request.on('data', function(data) {
+    // console.log(data.toString());
+    // results.push(JSON.parse(data.toString())); 
+
+      buffer.push(data);
+
+    }).on('end', function() {
+
+      var bufferToString = Buffer.concat(buffer).toString();
+      var parsed = JSON.parse(bufferToString);
+      results.push(parsed);
+
+      response.body = JSON.stringify({
+        results: results,
+      });
+
+      console.log('response.body' + response.body);
+      response.end(response.body);
+
+    });
+
+
+  }   
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
@@ -134,10 +151,7 @@ var requestHandler = function(request, response) {
   // node to actually send all the data over to the client.
 
 
-
-
-
-  response.end(response.body);
+  
 
 
 
