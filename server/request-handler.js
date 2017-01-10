@@ -56,9 +56,11 @@ var requestHandler = function(request, response) {
   // other than plain text, like JSON or HTML.
   headers['Content-Type'] = 'text/plain';
 
-
-  // GET handler
-  if (request.method === 'GET') {
+  if (request.url !== '/classes/messages') {
+    var statusCode = 404;
+    response.writeHead(statusCode, headers);
+    response.end();
+  } else if (request.method === 'GET') {
     // The outgoing status.
     var statusCode = 200;
 
@@ -79,49 +81,22 @@ var requestHandler = function(request, response) {
     response.writeHead(statusCode, headers);
   
     request.on('data', function(data) {
-    // console.log(data.toString());
-    // results.push(JSON.parse(data.toString())); 
 
       // handle data
-
       var message = {};
       message['username'] = JSON.parse(data)['username'];
       message['message'] = JSON.parse(data)['message'];
-
       results.push(message);
 
-      request.on('end', function() {
-
-        // var bufferToString = Buffer.concat(buffer).toString();
-        // var parsed = JSON.parse(bufferToString);
-        // results.push(parsed);
-
-        response.body = JSON.stringify({
-          'results': results,
-        });
-
-        console.log('response.body' + response.body);
-        response.end(response.body);
-
+      response.body = JSON.stringify({
+        'results': results,
       });
+
+      response.end(response.body);
     });
 
 
   }   
-
-  
-
-  
-
-  // var result = JSON.stringify(response.body);
-
-  // Make sure to always call response.end() - Node may not send
-  // anything back to the client until you do. The string you pass to
-  // response.end() will be the body of the response - i.e. what shows
-  // up in the browser.
-  //
-  // Calling .end "flushes" the response's internal buffer, forcing
-  // node to actually send all the data over to the client.
 
 
   
