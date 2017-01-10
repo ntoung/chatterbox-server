@@ -1,6 +1,9 @@
-// YOUR CODE HERE:
+
 var app = {
-  server: 'http://127.0.0.1:3000/classes/messages',
+
+  //TODO: The current 'handleUsernameClick' function just toggles the class 'friend'
+  //to all messages sent by the user
+  server: 'https://api.parse.com/1/classes/messages/',
   username: 'anonymous',
   roomname: 'lobby',
   lastMessageId: 0,
@@ -9,7 +12,7 @@ var app = {
 
   init: function() {
     // Get username
-    app.username = window.location.search.substring(10);
+    app.username = window.location.search.substr(10);
 
     // Cache jQuery selectors
     app.$message = $('#message');
@@ -17,6 +20,7 @@ var app = {
     app.$roomSelect = $('#roomSelect');
     app.$send = $('#send');
 
+    // Add listeners
     app.$chats.on('click', '.username', app.handleUsernameClick);
     app.$send.on('submit', app.handleSubmit);
     app.$roomSelect.on('change', app.handleRoomChange);
@@ -25,6 +29,7 @@ var app = {
     app.startSpinner();
     app.fetch(false);
 
+    // Poll for new messages
     setInterval(function() {
       app.fetch(true);
     }, 3000);
@@ -33,34 +38,32 @@ var app = {
   send: function(message) {
     app.startSpinner();
 
+    // POST the message to the server
     $.ajax({
       url: app.server,
       type: 'POST',
       data: JSON.stringify(message),
-      contentType: 'application/json; charset=utf-8',
       success: function (data) {
         // Clear messages input
         app.$message.val('');
 
         // Trigger a fetch to update the messages, pass true to animate
         app.fetch();
-
-        console.log('chatterbox: Message sent');
       },
-      error: function (data) {
-        console.error('chatterbox: Failed to send message', data);
+      error: function (error) {
+        console.error('chatterbox: Failed to send message', error);
       }
     });
   },
 
   fetch: function(animate) {
     $.ajax({
-      // This is the url you should use to communicate with the parse API server.
       url: app.server,
       type: 'GET',
-      data: {order: '-createdAt'},
-      contentType: 'application/json; charset=utf-8',
-      success: function (data) {
+      data: { order: '-createdAt' },
+      contentType: 'application/json',
+      success: function(data) {
+        // Don't bother if we have nothing to work with
         if (!data.results || !data.results.length) { return; }
 
         // Store messages for caching later
@@ -81,9 +84,8 @@ var app = {
           app.lastMessageId = mostRecentMessage.objectId;
         }
       },
-      error: function (error) {
-        // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
-        console.error('chatterbox: Failed to receive message', error);
+      error: function(error) {
+        console.error('chatterbox: Failed to fetch messages', error);
       }
     });
   },
@@ -93,13 +95,15 @@ var app = {
   },
 
   renderMessages: function(messages, animate) {
+    // Clear existing messages`
     app.clearMessages();
     app.stopSpinner();
     if (Array.isArray(messages)) {
+      // Add all fetched messages that are in our current room
       messages
         .filter(function(message) {
           return message.roomname === app.roomname ||
-                  app.roomname === 'lobby' && !message.roomname;
+                 app.roomname === 'lobby' && !message.roomname;
         })
         .forEach(app.renderMessage);
     }
@@ -127,6 +131,7 @@ var app = {
       });
     }
 
+    // Select the menu option
     app.$roomSelect.val(app.roomname);
   },
 
@@ -149,10 +154,7 @@ var app = {
     // Add in the message data using DOM methods to avoid XSS
     // Store the username in the element's data attribute
     var $username = $('<span class="username"/>');
-    $username.text(message.username + ': ')
-      .attr('data-roomname', message.roomname)
-      .attr('data-username', message.username)
-      .appendTo($chat);
+    $username.text(message.username + ': ').attr('data-roomname', message.roomname).attr('data-username', message.username).appendTo($chat);
 
     // Add the friend class
     if (app.friends[message.username] === true) {
@@ -173,11 +175,11 @@ var app = {
     var username = $(event.target).data('username');
 
     if (username !== undefined) {
-      //Toggle friend
+      // Toggle friend
       app.friends[username] = !app.friends[username];
 
       // Escape the username in case it contains a quote
-      var selector = '[data-username"' + username.replace(/"/g, '\\\"') + '"]';
+      var selector = '[data-username="' + username.replace(/"/g, '\\\"') + '"]';
 
       // Add 'friend' CSS class to all of that user's messages
       var $usernames = $(selector).toggleClass('friend');
@@ -202,7 +204,7 @@ var app = {
       }
     } else {
       app.startSpinner();
-      // store as undefined for empty names
+      // Store as undefined for empty names
       app.roomname = app.$roomSelect.val();
     }
     // Rerender messages
@@ -224,12 +226,11 @@ var app = {
 
   startSpinner: function() {
     $('.spinner img').show();
-    $('form input[type=submit').attr('disabled', 'true');
+    $('form input[type=submit]').attr('disabled', 'true');
   },
 
   stopSpinner: function() {
     $('.spinner img').fadeOut('fast');
     $('form input[type=submit]').attr('disabled', null);
   }
-
 };

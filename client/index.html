@@ -7,8 +7,6 @@
 
     <!-- dependencies -->
     <script src="bower_components/jquery/dist/jquery.js"></script>
-    <script src="bower_components/underscore/underscore-min.js"></script>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <script>
       // YOU DO NOT NEED TO EDIT THIS CODE
       if (!/(&|\?)username=/.test(window.location.search)) {
@@ -27,28 +25,23 @@
   <body>
     <div id="main">
       <h1>chatterbox</h1>
-      
+      <!-- Your HTML goes here! -->
+
       <div class="spinner"><img src="images/spiffygif_46x46.gif"></div>
       <div id="rooms">
         Room:
-        <select id="roomSelect"></select>
-      </div>  
+        <select id="roomSelect">
+        </select>
+      </div>
       <form action="#" id="send" method="post">
-        Username: <input type="text" id="username"/>
-        Message: <input type="text" id="message"/>
+        <input type="text" name="message" id="message"/>
         <input type="submit" name="submit" class="submit"/>
-      </form>
-    </div>  
-      
+      </form>    </div>
     <div id="chats"></div>
-      <!-- Your HTML goes here! -->
-    
 
-    
-  </body>
-  <script>
-    $(function(){
-        app.init()
+    <script>
+      $(function() {
+        app.init();
       });
-  </script>
+    </script>  </body>
 </html>
