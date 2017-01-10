@@ -56,56 +56,38 @@ var requestHandler = function(request, response) {
   // other than plain text, like JSON or HTML.
   headers['Content-Type'] = 'text/plain';
 
+  var statusCode;
   if (request.url !== '/classes/messages') {
-    var statusCode = 404;
-    response.writeHead(statusCode, headers);
-    response.end();
+    statusCode = 404;
   } else if (request.method === 'GET') {
     // The outgoing status.
-    var statusCode = 200;
-
-    // .writeHead() writes to the request line and headers of the response,
-    // which includes the status and all headers.
-    response.writeHead(statusCode, headers);
-    
-    response.end(JSON.stringify({
-      'results': results
-    }));
-  } else {
-
-  // if (request.method === 'POST') {
-    var statusCode = 201;
-
-    // .writeHead() writes to the request line and headers of the response,
-    // which includes the status and all headers.
-    response.writeHead(statusCode, headers);
-  
+    statusCode = 200;
+  } else if (request.method === 'POST') {
+    statusCode = 201;
     request.on('data', function(data) {
-
       // handle data
       var message = {};
       message['username'] = JSON.parse(data)['username'];
       message['message'] = JSON.parse(data)['message'];
       results.push(message);
-
-      response.body = JSON.stringify({
-        'results': results,
-      });
-
-      response.end(response.body);
     });
+  }
 
+  // .writeHead() writes to the request line and headers of the response,
+  // which includes the status and all headers.
+  response.writeHead(statusCode, headers);
 
-  }   
-
-
-  
-
-
-
+  // Make sure to always call response.end() - Node may not send
+  // anything back to the client until you do. The string you pass to
+  // response.end() will be the body of the response - i.e. what shows
+  // up in the browser.
+  //
+  // Calling .end "flushes" the response's internal buffer, forcing
+  // node to actually send all the data over to the client.
+  response.end(JSON.stringify({
+    'results': results
+  }));
 };
-
-
 
 module.exports = requestHandler;
 module.exports['requestHandler'] = requestHandler;
