@@ -57,20 +57,27 @@ var requestHandler = function(request, response) {
   headers['Content-Type'] = 'text/plain';
 
   var statusCode;
-  if (request.url !== '/classes/messages') {
+  if (request.url !== '/classes/messages/' && request.url !== '/classes/messages') {
     statusCode = 404;
   } else if (request.method === 'GET') {
-    // The outgoing status.
     statusCode = 200;
   } else if (request.method === 'POST') {
-    statusCode = 201;
+    statusCode = 201; 
     request.on('data', function(data) {
       // handle data
       var message = {};
+      message['createdAt'] = Date.now();
+      message['objectId'] = Math.floor(Math.random(100) * 100);
+      message['roomname'] = JSON.parse(data)['roomname'];
+      message['text'] = JSON.parse(data)['text'] || JSON.parse(data)['message'];
+      message['updatedAt'] = JSON.parse(data)['updatedAt'];
       message['username'] = JSON.parse(data)['username'];
-      message['message'] = JSON.parse(data)['message'];
+      
       results.push(message);
     });
+  } else if (request.method === 'OPTIONS') {
+    // The outgoing status.
+    statusCode = 200;
   }
 
   // .writeHead() writes to the request line and headers of the response,

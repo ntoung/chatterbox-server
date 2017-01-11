@@ -51,20 +51,22 @@ describe('server', function() {
     var requestParams = {method: 'POST',
       uri: 'http://127.0.0.1:3000/classes/messages',
       json: {
+        createdAt: '',
+        objectId: '',
+        roomname: '',
+        text: 'Do my bidding!',
+        updatedAt: '',
         username: 'Jono',
-        message: 'Do my bidding!'}
+      }
     };
 
     request(requestParams, function(error, response, body) {
       // Now if we request the log, that message we posted should be there:
       request('http://127.0.0.1:3000/classes/messages', function(error, response, body) {
-
-        console.log('TEST');
-        console.log(body);
         var messages = JSON.parse(body).results;
 
         expect(messages[0].username).to.equal('Jono');
-        expect(messages[0].message).to.equal('Do my bidding!');
+        expect(messages[0].text).to.equal('Do my bidding!');
         done();
       });
     });
@@ -77,5 +79,17 @@ describe('server', function() {
     });
   });
 
-
+  // it('should respond with invalid method when GET, POST, or OPTIONS is not specified', function(done) {
+  //   var requestParams = {method: 'DELETE',
+  //     uri: 'http://127.0.0.1:3000/classes/messages',
+  //     json: {
+  //       createdAt: '',
+  //       objectId: '',
+  //       roomname: '',
+  //       text: 'Do my bidding!',
+  //       updatedAt: '',
+  //       username: 'Jono',
+  //     }
+  //   };
+  // });
 });
